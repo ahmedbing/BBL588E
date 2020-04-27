@@ -21,6 +21,7 @@ void NoiseImgCreator(cv::Mat &Input, cv::Mat &Output, double threshold);
 void NoiseImgDisplay(cv::Mat BGR[], cv::Mat &Gray_I_1, cv::Mat &Gray_I_5, cv::Mat &Gray_I_10, cv::Mat &Gray_I_20);
 void LPF(cv::Mat Img ,const::std::string name);
 void HPF(cv::Mat Img,const::std::string name );
+void problem10meanfilter(const cv::Mat input,cv::Mat &output);
 
 int main(){
     cv::Mat original= cv::imread("/Users/ahmedbingol/Documents/Xcode_projects/Opencv1/Opencv1/Homeworks/SunnyLake.bmp", cv::IMREAD_COLOR);
@@ -87,6 +88,22 @@ int main(){
     
     cv::namedWindow("Pepper-Salt Noise");
     cv::imshow("Pepper Salt Noise", problem10);
+    
+    cv::Mat problem10_output=problem10.clone();
+    
+    std::vector<cv::Mat> in_BGR(3);
+    std::vector<cv::Mat> out_BGR(3);
+    cv::split(problem10,in_BGR);
+    cv::split(problem10_output,out_BGR);
+    
+    
+    problem10meanfilter(in_BGR[0],out_BGR[0]);
+    problem10meanfilter(in_BGR[1],out_BGR[1]);
+    problem10meanfilter(in_BGR[2],out_BGR[2]);
+    
+    cv::merge(out_BGR, problem10_output);
+    cv::namedWindow("Pepper-Salt de-Noise");
+    cv::imshow("Pepper Salt de-Noise", problem10_output);
     
     cv::waitKey(0);
     
@@ -287,4 +304,14 @@ void HPF(cv::Mat Img,const::std::string name ){
     cv::imshow(name+" 2nd High-Pass Filter(Laplace)", output2);
     cv::imshow(name+" High-Boost Filter", output3);
     cv::waitKey(0);
+}
+
+void problem10meanfilter(const cv::Mat input,cv::Mat &output){
+    for(int i=1; i<input.rows-1; ++i)
+        for(int j=1; j<input.cols-1; ++j)
+        {
+            if(input.at<uint8_t>(i,j)==0 | input.at<uint8_t>(i,j)==255 ){
+                output.at<uint8_t>(i,j)= uint8_t((input.at<uint8_t>(i-1,j-1)+ input.at<uint8_t>(i,j-1)+ input.at<uint8_t>(i-1,j)+ input.at<uint8_t>(i+1,j-1)+input.at<uint8_t>(i-1,j+1)+ input.at<uint8_t>(i,j+1)+ input.at<uint8_t>(i+1,j)+ input.at<uint8_t>(i+1,j+1))/8);
+            }
+        }
 }
